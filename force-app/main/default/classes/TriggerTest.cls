@@ -25,7 +25,7 @@ public with sharing class TriggerTest {
     /*
     * Question 1
     * Account Trigger
-    * When an account is inserted change the account type to 'Prospect' if there is no value in the type field.
+    * When an account is inserted, change the account type to 'Prospect' if there is no value in the type field.
     * Trigger should only fire on insert.
     */
     @IsTest 
@@ -103,14 +103,14 @@ public with sharing class TriggerTest {
 
         // Retrieve the accounts again
         List<Account> insertedAccounts = [SELECT Id, 
-                                          BillingStreet, 
-                                          BillingCity, 
-                                          BillingState, 
-                                          BillingPostalCode, 
-                                          BillingCountry 
-                                          FROM Account 
-                                          WHERE Id IN :accountsToInsert
-                                          ORDER BY AnnualRevenue ASC];
+                                        BillingStreet, 
+                                        BillingCity, 
+                                        BillingState, 
+                                        BillingPostalCode, 
+                                        BillingCountry 
+                                        FROM Account 
+                                        WHERE Id IN :accountsToInsert
+                                        ORDER BY AnnualRevenue ASC];
 
         // Assert that the Billing Address fields have been correctly copied from the Shipping Address for each account
         for (Integer i = 0; i < insertedAccounts.size(); i++) {
@@ -304,6 +304,9 @@ public with sharing class TriggerTest {
         // Prepare the test data
         Account testAccount = new Account(Name = 'Test Account', Industry = 'Banking');
         insert testAccount;
+        
+        Contact testContact = new Contact(LastName = 'Test Contact', AccountId = testAccount.Id, Email = 'default@email.com');
+        insert testContact;
 
         List<Opportunity> opportunitiesToInsert = new List<Opportunity>();
         for (Integer i = 0; i < 400; i++) {
@@ -389,7 +392,7 @@ public with sharing class TriggerTest {
         Test.stopTest();
 
         // Check that the primary contact is set correctly
-        List<Opportunity> updatedOpportunities = [SELECT Primary_Contact__c, Primary_Contact__r.FirstName, Primary_Contact__r.Title FROM Opportunity WHERE Id IN :opportunitiesToInsert];
+        List<Opportunity> updatedOpportunities = [SELECT Primary_Contact__c, Primary_Contact__r.FirstName, Primary_Contact__r.LastName, Primary_Contact__r.Title FROM Opportunity WHERE Id IN :opportunitiesToInsert];
         for (Opportunity opp : updatedOpportunities) {
             System.assertNotEquals(null, opp.Primary_Contact__c, 'Primary contact was not set.');
             System.assertEquals(opp.Primary_Contact__r.FirstName, 'Big Boss', 'Primary contact was not set correctly.');
